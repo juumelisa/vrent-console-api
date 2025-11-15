@@ -1,5 +1,5 @@
-from sqlalchemy import Column, BigInteger, Integer, SmallInteger, String, DateTime, func
-from app.database import Base
+from sqlalchemy import Column, BigInteger, SmallInteger, String, DateTime, func
+from app.config.database import Base
 
 class Admin(Base):
   __tablename__ = "admins"

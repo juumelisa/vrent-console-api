@@ -1,18 +1,11 @@
 from fastapi import FastAPI
-from app.database import Base, engine
-from app.routers import admin, vehicle
+from app.config.database import Base, engine
+from app.src.admin import router as adminRouter
+from app.src.vehicles import router as vehiclesRouter
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(admin.router)
-app.include_router(vehicle.router)
-
-@app.get("/")
-def hello():
-  return {
-    "code": "400",
-    "message": ["Hello, there! i'm learning FastAPI"],
-    "result": []
-  }
+app.include_router(adminRouter.router)
+app.include_router(vehiclesRouter.router)

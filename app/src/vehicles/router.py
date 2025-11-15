@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models.vehicle import Vehicle
-from app.schemas.vehicle import VehicleCreate, VehicleResponse
+from app.config.database import get_db
+from .model import Vehicle
+from .schema import VehicleCreate, VehicleResponse
 
 router = APIRouter(prefix="/vehicles", tags=["Vehicles"])
 
