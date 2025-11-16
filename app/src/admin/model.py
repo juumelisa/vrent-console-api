@@ -21,13 +21,3 @@ class AdminAuth(Base):
   password = Column(String(200))
   created_at = Column(DateTime, server_default=func.now())
   updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
-class AdminToken(Base):
-  __tablename__ = "admin_token"
-
-  id = Column(BigInteger, primary_key=True)
-  admin_id = Column(BigInteger)
-  token = Column(String(50))
-  expired_date = Column(DateTime)
-  created_at = Column(DateTime, server_default=func.now())
-  updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

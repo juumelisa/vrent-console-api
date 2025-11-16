@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from app.config.database import get_db
 from .model import Admin, AdminAuth
@@ -7,6 +8,7 @@ from .schema import AdminCreate, AdminResponse
 from .controller import get_admin_list
 import uuid
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(prefix="/admins", tags=["admins"])
 
 @router.get("/", response_model=AdminResponse)
@@ -80,11 +82,16 @@ def create_admin(data: AdminCreate, db: Session = Depends(get_db)):
       )
       db.add(admin)
 
+      hashPassword = pwd_context.hash(data.password)
+
+# def verify_password(password: str, hashed: str):
+#     return pwd_context.verify(password, hashed)
       auth = AdminAuth(
         id = auth_id,
         admin_id = id,
-        password = data.password,
+        password = hashPassword,
       )
+      
       db.add(auth)
       db.commit()
       db.refresh(admin)
