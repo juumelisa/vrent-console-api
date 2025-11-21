@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from app.src.admin.model import Admin, AdminAuth
 from .schema import AuthData
 from .model import AdminToken
-import os
 import uuid
 from datetime import datetime, timedelta
 import secrets
@@ -66,7 +65,6 @@ def auth(data: AuthData, db: Session):
         "result": []
       }
   except NameError:
-    print(NameError)
     return JSONResponse(
       status_code=200,
       content={
@@ -75,3 +73,56 @@ def auth(data: AuthData, db: Session):
         "result": []
       }
     )
+  except:
+    return JSONResponse(
+      status_code=200,
+      content={
+        "code": 500,
+        "message": "internal server error",
+        "result": []
+      }
+    )
+
+
+def remove_token(authorization: str, db: Session):
+  try:
+    if not authorization:
+      return {
+        "code": 401,
+        "message": "invalid credentials!",
+        "result": []
+      }
+    else:
+      scheme, token = authorization.split()
+      print(token)
+      if scheme.lower() != "bearer":
+        return {
+          "code": 401,
+          "message": "invalid credentials!",
+          "result": []
+        }
+      else:
+        tokenData = db.query(AdminToken).filter(
+          AdminToken.token == token
+        ).first()
+        print(tokenData)
+        if (tokenData):
+          db.delete(tokenData)
+          db.commit()
+          return {
+            "code": 200,
+            "message": "successfully logout!",
+            "result": []
+          }
+        else:
+          return {
+            "code": 401,
+            "message": "invalid credentials!",
+            "result": []
+          }
+  except:
+    return {
+      "code": 500,
+      "message": "internal server error",
+      "result": []
+    }
