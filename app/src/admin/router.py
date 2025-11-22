@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.middleware.public import auth_public
 from .model import Admin, AdminAuth
-from .schema import AdminCreate, AdminResponse
+from .schema import AdminCreate, AdminResponse, AdminQuery
 from .controller import get_admin_list
 import uuid
 
@@ -13,8 +13,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(prefix="/admins", tags=["admins"])
 
 @router.get("/", dependencies=[Depends(auth_public)], response_model=AdminResponse)
-def list_admin(db: Session = Depends(get_db)):
-  return get_admin_list(db)
+def list_admin(query: AdminQuery = Depends(), db: Session = Depends(get_db)):
+  return get_admin_list(query, db)
 
 @router.get("/{admin_id}", dependencies=[Depends(auth_public)], response_model=AdminResponse)
 def get_admin(admin_id: int, db: Session = Depends(get_db)):

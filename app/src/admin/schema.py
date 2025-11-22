@@ -1,12 +1,18 @@
 from pydantic import BaseModel, ConfigDict
-
+from typing import Optional
 class AdminBase (BaseModel):
   name: str
   email: str
   profile_picture: str
   role: str
   password: str
-  
+
+
+class AdminQuery(BaseModel):
+  q: Optional[str] = None
+  limit: int = 10
+  page: int = 1
+
 class AdminCreate (AdminBase):
   pass
 
