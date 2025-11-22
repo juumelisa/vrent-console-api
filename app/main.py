@@ -3,8 +3,10 @@ from app.config.database import Base, engine
 from app.src.admin import router as adminRouter
 from app.src.auth import router as authRouter
 from app.src.vehicles import router as vehiclesRouter
+import os
 
-Base.metadata.create_all(bind=engine)
+if os.getenv("ENV") == "local":
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
