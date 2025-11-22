@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from app.config.database import get_db
+from app.middleware.public import auth_public
 from .model import Admin, AdminAuth
 from .schema import AdminCreate, AdminResponse
 from .controller import get_admin_list
@@ -11,11 +12,11 @@ import uuid
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(prefix="/admins", tags=["admins"])
 
-@router.get("/", response_model=AdminResponse)
+@router.get("/", dependencies=[Depends(auth_public)], response_model=AdminResponse)
 def list_admin(db: Session = Depends(get_db)):
   return get_admin_list(db)
 
-@router.get("/{admin_id}", response_model=AdminResponse)
+@router.get("/{admin_id}", dependencies=[Depends(auth_public)], response_model=AdminResponse)
 def get_admin(admin_id: int, db: Session = Depends(get_db)):
   try:
     result=  db.query(Admin).filter(Admin.id == admin_id, Admin.status == 1).first()
@@ -50,7 +51,7 @@ def get_admin(admin_id: int, db: Session = Depends(get_db)):
       }
     )
 
-@router.post("/", response_model=AdminResponse)
+@router.post("/", dependencies=[Depends(auth_public)], response_model=AdminResponse)
 def create_admin(data: AdminCreate, db: Session = Depends(get_db)):
   try:
 
