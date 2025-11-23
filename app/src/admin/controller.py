@@ -15,7 +15,26 @@ def get_admin_list(query: AdminQuery, db: Session):
           Admin.name.contains(q),
           Admin.email.contains(q)
        ))
-    result =  db.query(Admin).filter(*filters).limit(query.limit).offset(offsets)
+    adminList =  db.query(Admin).filter(*filters).limit(query.limit).offset(offsets)
+    result = []
+    for index, admin in enumerate(adminList):
+      role = "staff"
+      if admin.role == 1:
+        role = "super admin"
+      elif admin.role == 2:
+        role = "admin"
+
+      profile_picture = ""
+      if (admin.profile_picture and admin.profile_picture.startswith("https")):
+        profile_picture = admin.profile_picture
+      obj = {
+        "id": admin.id,
+        "name": admin.name,
+        "email": admin.email,
+        "profile_picture": profile_picture,
+        "role": role
+      }
+      result.append(obj)
     return {
       "code": 200,
       "message": "successfully fetch data",

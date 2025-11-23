@@ -21,6 +21,7 @@ class AdminResult (BaseModel):
   name: str
   email: str
   profile_picture: str
+  role: str
 
 class AdminResponse(BaseModel):
   code: int
