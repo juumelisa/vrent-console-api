@@ -7,7 +7,7 @@ from app.middleware.public import auth_public
 from app.middleware.admin import auth_admin, auth_super_admin
 from .model import Admin, AdminAuth
 from .schema import AdminCreate, AdminResponse, AdminQuery
-from .controller import get_admin_list
+from .controller import get_admin_list, get_admin_info
 import uuid
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -19,38 +19,7 @@ def list_admin(query: AdminQuery = Depends(), db: Session = Depends(get_db)):
 
 @router.get("/{admin_id}", dependencies=[Depends(auth_public), Depends(auth_admin)], response_model=AdminResponse)
 def get_admin(admin_id: int, db: Session = Depends(get_db)):
-  try:
-    result=  db.query(Admin).filter(Admin.id == admin_id, Admin.status == 1).first()
-    if result:
-      return {
-        "code": 200,
-        "message": "successfully fetch data",
-        "result": [result]
-      }
-    else:
-      return {
-        "code": 404,
-        "message": "admin not found",
-        "result": []
-      }
-  except NameError:
-    return JSONResponse(
-      status_code=200,
-      content={
-        "code": 500,
-        "message": NameError.name,
-        "result": []
-      }
-    )
-  except:
-    return JSONResponse(
-      status_code=200,
-      content={
-        "code": 500,
-        "message": "internal server error",
-        "result": []
-      }
-    )
+  return get_admin_info(admin_id, db)
 
 @router.post("/", dependencies=[Depends(auth_public), Depends(auth_super_admin)], response_model=AdminResponse)
 def create_admin(data: AdminCreate, db: Session = Depends(get_db)):
@@ -101,12 +70,6 @@ def create_admin(data: AdminCreate, db: Session = Depends(get_db)):
         "message": "successfully add admin",
         "result": []
       }
-  except NameError:
-    print(NameError)
-    return JSONResponse(
-      status_code=200,
-      content={"code": 500, "message": "something went wrong", "result": []}
-    )
   except:
     return JSONResponse(
       status_code=200,

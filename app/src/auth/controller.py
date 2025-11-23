@@ -39,11 +39,24 @@ def auth(data: AuthData, db: Session):
           db.add(tokenData)
           db.commit()
           db.refresh(tokenData)
+          role = "staff"
+          if admin.role == 1:
+            role = "super admin"
+          elif admin.role == 2:
+            role = "admin"
+          userData = {
+            "id": admin.id,
+            "name": admin.name,
+            "email": admin.email,
+            "profile_picture": admin.profile_picture,
+            "role": role
+          }
           return {
             "code": 200,
-            "message": "successfully fetch data",
+            "message": "logged in",
             "result": [{
-              "token": token
+              "token": token,
+              "user": userData
             }]
           }
         else:
@@ -64,15 +77,6 @@ def auth(data: AuthData, db: Session):
         "message": "invalid credentials!",
         "result": []
       }
-  except NameError:
-    return JSONResponse(
-      status_code=200,
-      content={
-        "code": 500,
-        "message": "internal server error",
-        "result": []
-      }
-    )
   except:
     return JSONResponse(
       status_code=200,
@@ -83,43 +87,81 @@ def auth(data: AuthData, db: Session):
       }
     )
 
-
-def remove_token(authorization: str, db: Session):
+def info (token: str, db:Session):
   try:
-    if not authorization:
+    isValid = False
+    result = []
+    if token:
+      tokenData = db.query(AdminToken).filter(
+        AdminToken.token == token
+      ).first()
+      if tokenData:
+        userData = db.query(Admin).filter(
+          Admin.id == tokenData.admin_id
+        ).first()
+        if userData:
+          role = "staff"
+          if userData.role == 1:
+            role = "super admin"
+          elif userData.role == 2:
+            role = "admin"
+          profile_picture = ""
+          if (userData.profile_picture and userData.profile_picture.startswith("https")):
+            profile_picture = userData.profile_picture
+          obj = {
+            "id": userData.id,
+            "name": userData.name,
+            "email": userData.email,
+            "profile_picture": profile_picture,
+            "role": role
+          }
+          isValid = True
+          result = [obj]
+    if isValid:
+      return {
+        "code": 200,
+        "message": "successfully fetch user information",
+        "result": result
+      }
+    else:
+      return {
+        "code": 401,
+        "message": "invalid credentials!",
+        "result": []
+      }
+  except:
+    return {
+      "code": 500,
+      "message": "internal server error",
+      "result": []
+    }
+
+def remove_token(token: str, db: Session):
+  try:
+    if not token:
       return {
         "code": 401,
         "message": "invalid credentials!",
         "result": []
       }
     else:
-      scheme, token = authorization.split()
-      print(token)
-      if scheme.lower() != "bearer":
+      tokenData = db.query(AdminToken).filter(
+        AdminToken.token == token
+      ).first()
+      if (tokenData):
+        db.delete(tokenData)
+        db.commit()
+        return {
+          "code": 200,
+          "message": "successfully logout!",
+          "result": []
+        }
+      else:
         return {
           "code": 401,
           "message": "invalid credentials!",
           "result": []
         }
-      else:
-        tokenData = db.query(AdminToken).filter(
-          AdminToken.token == token
-        ).first()
-        print(tokenData)
-        if (tokenData):
-          db.delete(tokenData)
-          db.commit()
-          return {
-            "code": 200,
-            "message": "successfully logout!",
-            "result": []
-          }
-        else:
-          return {
-            "code": 401,
-            "message": "invalid credentials!",
-            "result": []
-          }
   except:
     return {
       "code": 500,

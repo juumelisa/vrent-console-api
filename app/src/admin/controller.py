@@ -49,3 +49,28 @@ def get_admin_list(query: AdminQuery, db: Session):
         "result": []
       }
     )
+
+def get_admin_info (admin_id: int, db: Session):
+  try:
+    result=  db.query(Admin).filter(Admin.id == admin_id, Admin.status == 1).first()
+    if result:
+      return {
+        "code": 200,
+        "message": "successfully fetch data",
+        "result": [result]
+      }
+    else:
+      return {
+        "code": 404,
+        "message": "admin not found",
+        "result": []
+      }
+  except:
+    return JSONResponse(
+      status_code=200,
+      content={
+        "code": 500,
+        "message": "internal server error",
+        "result": []
+      }
+    )

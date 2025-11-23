@@ -42,8 +42,7 @@ async def auth_super_admin(request: Request):
             "result": []
           }
         )
-    except NameError:
-      print(NameError)
+    except:
       raise HTTPException(
         status_code=401,
         detail={
