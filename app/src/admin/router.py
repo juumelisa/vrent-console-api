@@ -4,6 +4,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.middleware.public import auth_public
+from app.middleware.admin import auth_admin, auth_super_admin
 from .model import Admin, AdminAuth
 from .schema import AdminCreate, AdminResponse, AdminQuery
 from .controller import get_admin_list
@@ -12,11 +13,11 @@ import uuid
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(prefix="/admins", tags=["admins"])
 
-@router.get("/", dependencies=[Depends(auth_public)], response_model=AdminResponse)
+@router.get("/", dependencies=[Depends(auth_public), Depends(auth_admin)], response_model=AdminResponse)
 def list_admin(query: AdminQuery = Depends(), db: Session = Depends(get_db)):
   return get_admin_list(query, db)
 
-@router.get("/{admin_id}", dependencies=[Depends(auth_public)], response_model=AdminResponse)
+@router.get("/{admin_id}", dependencies=[Depends(auth_public), Depends(auth_admin)], response_model=AdminResponse)
 def get_admin(admin_id: int, db: Session = Depends(get_db)):
   try:
     result=  db.query(Admin).filter(Admin.id == admin_id, Admin.status == 1).first()
@@ -51,10 +52,9 @@ def get_admin(admin_id: int, db: Session = Depends(get_db)):
       }
     )
 
-@router.post("/", dependencies=[Depends(auth_public)], response_model=AdminResponse)
+@router.post("/", dependencies=[Depends(auth_public), Depends(auth_super_admin)], response_model=AdminResponse)
 def create_admin(data: AdminCreate, db: Session = Depends(get_db)):
   try:
-
     exist_admin = db.query(Admin).filter(Admin.email == data.email, Admin.status == 1).first()
     if (exist_admin):
       return JSONResponse(
